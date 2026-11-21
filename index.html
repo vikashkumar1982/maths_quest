@@ -167,14 +167,16 @@ const H=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Ma
 const hp=async(id,pin)=>[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("mq|"+id+"|"+pin)))].map(x=>x.toString(16).padStart(2,"0")).join("");
 const getCur=()=>{try{return JSON.parse(localStorage.getItem("mq_cur")||"null")}catch(e){return null}};
 const setCur=c=>{try{c?localStorage.setItem("mq_cur",JSON.stringify(c)):localStorage.removeItem("mq_cur")}catch(e){}};
-async function initDb(){try{if(window.claude&&claude.use){DB=await claude.use("db");const us=await claude.use("user");canW=!us||us.can("data.write")!==false}}catch(e){DB=null}}
-async function loadU(id){let loc=null,rem=null;try{loc=JSON.parse(localStorage.getItem("mq3_"+id)||"null")}catch(e){}
-if(DB){try{const s=await DB.doc("learners/"+id).get();if(s.exists)rem=JSON.parse(JSON.stringify(s.data()))}catch(e){}}
+const SB_URL="https://mvqhvtjmenxdfsocmqoc.supabase.co",SB_KEY="sb_publishable_oiU9QvSQbQNIoFclvgQFcQ_QjFmfYcu";let SB=false;
+async function sbRpc(fn,body){const r=await fetch(SB_URL+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:SB_KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});if(!r.ok)throw new Error(r.status);return r.json()}
+async function initDb(){try{if(window.claude&&claude.use){DB=await claude.use("db");const us=await claude.use("user");canW=!us||us.can("data.write")!==false}}catch(e){DB=null}if(!DB){SB=true;canW=true}}
+async function loadU(id,ph){let loc=null,rem=null;try{loc=JSON.parse(localStorage.getItem("mq3_"+id)||"null")}catch(e){}
+if(DB){try{const s=await DB.doc("learners/"+id).get();if(s.exists)rem=JSON.parse(JSON.stringify(s.data()))}catch(e){}}else if(SB){try{const d=await sbRpc("get_learner",{p_id:id,p_ph:ph});if(d)rem=d._bad_pin?{ph:"!bad"}:d}catch(e){syncErr=true}}
 if(rem&&loc&&loc.ph==rem.ph&&(loc.upd||0)>(rem.upd||0))return loc;return rem||loc}
 async function flush(){if(busy){dirty=true;return}busy=true;
-do{dirty=false;try{await DB.doc("learners/"+U.id).set(JSON.parse(JSON.stringify(U)));syncErr=false}catch(e){syncErr=true;canW=false}}while(dirty);busy=false}
-function persist(){U.upd=Date.now();try{localStorage.setItem("mq3_"+U.id,JSON.stringify(U))}catch(e){}if(DB&&canW)flush()}
-const status=()=>DB&&canW?"☁️ Saved online – log in on any device to continue":"💾 Saved on this device only (online saving isn’t available for this link)";
+do{dirty=false;try{const d=JSON.parse(JSON.stringify(U));if(DB)await DB.doc("learners/"+U.id).set(d);else{const ok=await sbRpc("save_learner",{p_id:U.id,p_ph:U.ph,p_data:d,p_upd:U.upd||Date.now()});if(ok!==true)throw 0}syncErr=false}catch(e){syncErr=true;if(DB)canW=false}}while(dirty);busy=false}
+function persist(){U.upd=Date.now();try{localStorage.setItem("mq3_"+U.id,JSON.stringify(U))}catch(e){}if((DB||SB)&&canW)flush()}
+const status=()=>(DB||SB)&&canW&&!syncErr?"☁️ Saved online – log in on any device to continue":"💾 Saved on this device only (online saving isn’t available for this link)";
 function cf(msg,yes){const d=document.createElement("div");d.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:99";d.innerHTML=`<div class="card" style="max-width:420px"><p style="margin-top:0">${msg}</p><button class="go" id="cy">Yes, continue</button><button class="go ghost" id="cn">Cancel</button></div>`;document.body.appendChild(d);d.querySelector("#cn").onclick=()=>d.remove();d.querySelector("#cy").onclick=()=>{d.remove();yes()}}
 const logout=()=>{setCur(null);location.hash="#/login"};
 function gen(L,seen,rs,last,pool,strict){let g,t,n=0;
@@ -206,7 +208,7 @@ $("#bk").onclick=()=>location.hash="#/rounds";$("#lo").onclick=logout;$("#fb").o
 document.querySelectorAll(".qn").forEach(x=>x.onchange=()=>{h.rv[+x.dataset.k].n=x.value;persist()})}
 function startRound(gr,topic){const qs=buildRound(gr,topic);U.round={gr,topic:topic||null,qs,i:0,pick:null,score:0,max:qs.reduce((s,q)=>s+q.m,0),log:[]};U.done=null;persist();location.hash="#/quiz"}
 async function route(){const my=++tok,h=location.hash.replace("#/","")||"login",c=getCur();U=null;
-if(c){app.innerHTML='<p class="sub">Loading your progress…</p>';const u=await loadU(c.id);if(my!=tok)return;if(u&&u.ph==c.ph)U=u;else setCur(null)}
+if(c){app.innerHTML='<p class="sub">Loading your progress…</p>';const u=await loadU(c.id,c.ph);if(my!=tok)return;if(u&&u.ph==c.ph)U=u;else setCur(null)}
 if(!U&&h!="login"){location.hash="#/login";return}
 if(h=="login")pLogin();else if(h=="grade")pGrade();else if(/^year-[0-6]$/.test(h))pYear(+h.slice(5));else if(/^rounds(-[0-6])?$/.test(h))pRounds(h.length>6?+h.slice(7):null);else if(/^review-\d+$/.test(h))pReview(+h.slice(7));
 else if(h=="quiz"){U.round?pQuiz():location.hash="#/grade"}
@@ -215,7 +217,7 @@ function pLogin(){app.innerHTML=`<h1>🧮 Maths Quest</h1><p class="sub">Step 1 
 const run=async()=>{const id=$("#nm").value.trim().toLowerCase(),pin=$("#pn").value.trim(),er=$("#er");
 if(!/^[a-z0-9_-]{3,20}$/.test(id)){er.textContent="Learner ID needs 3–20 letters, numbers, - or _.";return}
 if(!/^\d{4}$/.test(pin)){er.textContent="PIN must be exactly 4 digits.";return}
-$("#st").disabled=true;er.textContent="";const ph=await hp(id,pin);let u=await loadU(id);
+$("#st").disabled=true;er.textContent="";const ph=await hp(id,pin);let u=await loadU(id,ph);
 if(u&&u.ph!=ph){er.textContent="That PIN doesn’t match this Learner ID.";$("#st").disabled=false;return}
 if(!u){U={id,ph,name:id,seen:[],tier:{},last:{},hist:[],stats:{},round:null,done:null};persist()}
 else{u.tier=u.tier||{};u.last=u.last||{};U=u}
