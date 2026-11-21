@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en-AU"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maths Quest – Primary Maths Practice</title>
+<style>
+:root{--bg:#f1f6fd;--card:#fff;--tx:#1b2838;--mu:#5a6b80;--pr:#2f6fed;--prt:#fff;--ok:#1b9a58;--okb:#e3f6ec;--bad:#d24545;--badb:#fdeaea;--bd:#d6e0ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0e1621;--card:#182333;--tx:#eaf0f8;--mu:#9fb0c5;--pr:#5b93ff;--prt:#0b1220;--ok:#4cd08a;--okb:#143324;--bad:#ff7a7a;--badb:#3a1c1f;--bd:#2c3b52}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0e1621;--card:#182333;--tx:#eaf0f8;--mu:#9fb0c5;--pr:#5b93ff;--prt:#0b1220;--ok:#4cd08a;--okb:#143324;--bad:#ff7a7a;--badb:#3a1c1f;--bd:#2c3b52}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Nunito","Trebuchet MS",system-ui,sans-serif;font-size:18px;line-height:1.4}
+main{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:clamp(28px,5vw,38px);margin:8px 0}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:22px;box-shadow:0 4px 16px rgba(20,40,80,.07)}
+p.sub{color:var(--mu);margin:0 0 16px}
+label{display:block;font-weight:700;margin:14px 0 6px}
+input,select{width:100%;font:inherit;padding:14px;border-radius:14px;border:2px solid var(--bd);background:var(--bg);color:var(--tx)}
+button{font:inherit;cursor:pointer}
+.go{width:100%;margin-top:20px;padding:16px;border:0;border-radius:16px;background:var(--pr);color:var(--prt);font-weight:800;font-size:20px}
+.ghost{background:transparent;color:var(--pr);border:2px solid var(--pr);margin-top:10px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;color:var(--mu)}
+.badge{background:var(--pr);color:var(--prt);padding:4px 12px;border-radius:99px;font-size:15px}
+.bar{height:10px;background:var(--bd);border-radius:9px;margin:10px 0 18px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--pr);transition:width .3s}
+.tag{margin:0;color:var(--mu);font-size:15px;text-transform:uppercase;letter-spacing:.05em}
+.q{font-size:clamp(22px,4.5vw,30px);margin:6px 0 20px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{padding:20px 8px;border-radius:16px;border:2px solid var(--bd);background:var(--bg);color:var(--tx);font-size:24px;font-weight:800;min-height:68px}
+.opt:hover:not(:disabled){border-color:var(--pr)}
+.opt.ok{background:var(--okb);border-color:var(--ok);color:var(--ok)}
+.opt.bad{background:var(--badb);border-color:var(--bad);color:var(--bad)}
+.fb{margin-top:16px;font-weight:800;min-height:28px}
+.row{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:16px}
+.row b{width:170px;font-weight:700}
+.row .bar{flex:1;margin:0}
+.score{font-size:56px;font-weight:900;color:var(--pr);margin:4px 0}
+@media (max-width:480px){.row b{width:110px;font-size:14px}}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.lnk{background:none;border:0;color:var(--pr);font-weight:700;text-decoration:underline}
+.grades{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.gc{display:flex;flex-direction:column;gap:6px;text-align:left;padding:20px;border-radius:18px;border:2px solid var(--bd);background:var(--card);color:var(--tx)}
+.gc:hover{border-color:var(--pr)}.gc b{font-size:24px}.gc span{color:var(--mu);font-size:15px}
+.stat{font-size:14px;color:var(--mu)}
+.seg{display:flex;gap:8px}.seg button{flex:1;padding:12px;border-radius:12px;border:2px solid var(--bd);background:var(--bg);color:var(--tx);font-weight:800}.seg button.on{background:var(--pr);color:var(--prt);border-color:var(--pr)}
+</style></head>
+<body><main id="app"></main>
+<script>
+const $=s=>document.querySelector(s),app=$("#app");
+const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a,P=a=>a[R(0,a.length-1)];
+const fmt=n=>Math.abs(n)>=10000?n.toLocaleString("en-AU"):String(n);
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let store={};try{store=JSON.parse(localStorage.getItem("mathsquest2")||"{}")}catch(e){}
+const save=()=>{try{localStorage.setItem("mathsquest2",JSON.stringify(store))}catch(e){}};
+const T={nums:"Number sense",time:"Time",stats:"Statistics & data",chance:"Chance & probability",coord:"Position & transformation",factors:"Factors, multiples & primes",order:"Order of operations",add:"Addition",sub:"Subtraction",mul:"Multiplication",div:"Division",frac:"Fractions & percentages",money:"Money",measure:"Measurement & time",place:"Place value & rounding",pattern:"Patterns & algebra",geo:"Geometry"};
+const mx=L=>[0,20,100,1000,10000,100000,1000000,10000000,100000000][L];
+const $m=v=>"$"+v.toFixed(2);
+function digitQ(nd){let d=[0,1,2,3,4,5,6,7,8,9].sort(()=>Math.random()-.5);if(d[0]==0)[d[0],d[1]]=[d[1],d[0]];d=d.slice(0,nd);const n=+d.join(""),i=R(0,nd-1);if(d[i]==0)return digitQ(nd);return{q:`What is the value of the digit ${d[i]} in ${fmt(n)}?`,a:d[i]*10**(nd-1-i)}}
+const G={
+add(L){const m=mx(L);let a=R(Math.ceil(m/10),m),b=R(Math.ceil(m/10),m);if(L==1){a=R(1,FND?5:10);b=R(1,FND?5:10)}return{q:`What is ${fmt(a)} + ${fmt(b)}?`,a:a+b}},
+sub(L){const m=mx(L);let a=R(Math.ceil(m/5),m),b=R(Math.ceil(m/10),m);if(L==1){a=R(FND?3:5,FND?10:20);b=R(1,a-1)}if(b>a)[a,b]=[b,a];return{q:`What is ${fmt(a)} − ${fmt(b)}?`,a:a-b}},
+mul(L){let a,b;if(L==1){a=P([2,5,10]);b=R(1,10)}else if(L==2){a=P([2,3,4,5,10]);b=R(1,10)}else if(L==3){a=R(2,10);b=R(2,12)}else if(L==4){a=R(11,99);b=R(2,9)}else if(L==5){a=R(12,60);b=R(11,25)}else if(L==6){a=R(100,999);b=R(11,30)}else if(L==7){a=R(25,99);b=R(25,99)}else{a=R(101,999);b=R(25,99)}return{q:`What is ${a} × ${b}?`,a:a*b}},
+div(L){const b=L==1?P([2,5,10]):L>=7?R(11,25):R(2,L<4?10:12),k=R(2,[0,10,12,12,40,60,90,150,300][L]);return{q:`What is ${fmt(b*k)} ÷ ${b}?`,a:k}},
+frac(L){let q,a;
+if(L==1){const n=2*R(1,10);q=`What is half of ${n}?`;a=n/2}
+else if(L==2){const n=4*R(1,10);q=`What is one quarter of ${n}?`;a=n/4}
+else if(L==3){const d=P([2,3,4,5,10]),n=R(1,d-1),k=R(2,6);q=`What is ${n}/${d} of ${d*k}?`;a=n*k}
+else if(L==4){const d=P([2,3,4,5]),m=R(2,6);q=`Find the missing number: 1/${d} = ?/${d*m}`;a=m}
+else if(L==5){const d=R(5,12),x=R(1,d-3),y=R(1,d-x-1);q=`Find the missing number: ${x}/${d} + ${y}/${d} = ?/${d}`;a=x+y}
+else if(L==7){const p=P([15,30,35,45,60,75]),x=20*R(5,40);q=`What is ${p}% of ${x}?`;a=p*x/100}else if(L==8){const b=P([2,3,4,6]),d=P([2,3,4,6]),x=R(1,b-1),y=R(1,d-1);q=`Find the missing number: ${x}/${b} + ${y}/${d} = ?/12`;a=x*12/b+y*12/d}else{const p=P([5,10,20,25,50]),x=20*R(1,20);q=`What is ${p}% of ${x}?`;a=p*x/100}
+return{q,a}},
+money(L){let q,a,f=$m,u=.5;
+if(L==1){const c=[P([5,10,20,50]),P([5,10,20,50]),P([5,10,20])];q=`You have coins of ${c.map(x=>x+"c").join(", ")}. How many cents altogether?`;a=c[0]+c[1]+c[2];f=v=>v+"c";u=5}
+else if(L==2){const c=50*R(2,9);q=`A snack costs ${$m(c/100)}. You pay with $5. How much change?`;a=(500-c)/100}
+else if(L==3){const c=5*R(60,380);q=`A book costs ${$m(c/100)}. You pay with $20. How much change?`;a=(2000-c)/100}
+else if(L==4){const n=R(3,8),p=5*R(60,300);q=`${n} pens cost ${$m(p/100)} each. What is the total cost?`;a=n*p/100}
+else if(L==5){const x=10*R(2,20),d=P([10,20,25,50]);q=`A jacket costs $${x}. It is ${d}% off. What is the sale price?`;a=x*(100-d)/100;u=2.5}
+else if(L==7){const x=10*R(5,40),d=P([10,20,25]);q=`A $${x} item is ${d}% off, then 10% GST is added. What is the final price?`;a=Math.round(x*(100-d)*110/100)/100;u=2.5}else if(L==8){const n=R(4,9),p=R(3,25)+P([0,.5]),t=n*p,note=Math.ceil(t/50)*50;q=`${n} books cost ${$m(p)} each. You pay with $${note}. How much change?`;a=note-t;u=2.5}else{const x=5*R(4,40);q=`A meal costs $${x} plus 10% GST. What is the total price?`;a=Math.round(x*110)/100;u=1.1}
+return{q,a,f,u}},
+measure(L){let q,a,f,u;
+if(L==1){const h=R(1,8),k=P([1,2,3]);q=`The clock shows ${h}:00. What time will it be in ${k} hour${k>1?"s":""}?`;a=h+k;f=v=>v+":00"}
+else if(L==2){const n=R(2,6);q=`How many minutes are in ${n} hours?`;a=60*n;u=10}
+else if(L==3){const m=R(2,15),k=P([1,2,3]);if(k==1){q=`${m} metres = how many centimetres?`;a=100*m}else if(k==2){q=`${m} kilograms = how many grams?`;a=1000*m}else{q=`${m} litres = how many millilitres?`;a=1000*m}u=100}
+else if(L==4){const h=R(1,5),m=P([10,15,20,30,45]);q=`${h} hours ${m} minutes = how many minutes?`;a=60*h+m;u=10}
+else if(L==5){const w=R(3,15),l=R(w+1,20),k=R(0,1);q=k?`A rectangle is ${l} cm long and ${w} cm wide. What is its area in cm²?`:`A rectangle is ${l} m long and ${w} m wide. What is its perimeter in metres?`;a=k?l*w:2*(l+w);u=k?l:2}
+else if(L==7){const b=R(4,30),h=2*R(2,15);q=`A triangle has a base of ${b} cm and a height of ${h} cm. What is its area in cm²?`;a=b*h/2;u=b}else if(L==8){const l=10*R(3,10),w=10*R(3,10),h=10*R(3,10);q=`A tank is ${l} cm long, ${w} cm wide and ${h} cm high. How many litres can it hold? (1 L = 1000 cm³)`;a=l*w*h/1000;u=l/10}else{const l=R(2,12),w=R(2,9),h=R(2,9);q=`A box is ${l} cm long, ${w} cm wide and ${h} cm high. What is its volume in cm³?`;a=l*w*h;u=l}
+return{q,a,f,u}},
+place(L){if(L==1){const n=R(1,9);return{q:`How many tens are in ${n*10}?`,a:n}}
+if(L<=4)return digitQ([0,0,2,3,4][L]+(L==4&&R(0,1)?1:0));
+if(L==5){let n,k;do{n=R(10000,99999);k=P([100,1000])}while(n%k==k/2);return{q:`Round ${fmt(n)} to the nearest ${k}.`,a:Math.round(n/k)*k}}
+if(L==7){const p=P([100,1000]),v=R(1001,9999);return{q:`What is ${v/1000} × ${p}?`,a:v*p/1000,f:z=>String(z)}}if(L==8){let x;do{x=R(10001,99999)}while(x%100==50);return{q:`Round ${x/10000} to 2 decimal places.`,a:Math.round(x/100)/100,f:z=>z.toFixed(2)}}const x=R(11,999)/100,p=P([10,100]);return{q:`What is ${x} × ${p}?`,a:Math.round(x*p*100)/100,f:v=>String(v)}},
+pattern(L){let s,d,seq,a;
+if(L==7){const m=R(3,12),c=R(2,15),n=R(10,60);return{q:`A pattern follows the rule “multiply the position by ${m}, then subtract ${c}”. What is the value at position ${n}?`,a:m*n-c}}if(L==8){const m=R(3,12),c=R(2,15),n=R(10,60);return{q:`In a pattern, the value at position n is ${m}n + ${c}. Which position has the value ${m*n+c}?`,a:n}}if(L==6){const m=R(2,9),c=R(1,9),n=R(5,20);return{q:`A pattern follows the rule “multiply the position by ${m}, then add ${c}”. What is the value at position ${n}?`,a:m*n+c}}
+if(L==5){const r=P([2,3]);s=R(1,6);seq=[0,1,2,3].map(i=>s*r**i);a=s*r**4}
+else if(L==4){d=P([3,4,6,7,9]);s=4*d+R(5,60);seq=[0,1,2,3].map(i=>s-i*d);a=s-4*d}
+else{d=L==1?P([1,2,5,10]):L==2?P([2,3,4,5,10]):P([6,7,8,9,12,15,25]);s=R(0,L*15);seq=[0,1,2,3].map(i=>s+i*d);a=s+4*d}
+return{q:`What number comes next? ${seq.join(", ")}, ?`,a}},
+geo(L){let q,a;
+if(L==1){const s=P([["triangle",3],["square",4],["rectangle",4]]),w=P(["sides","corners"]);q=`How many ${w} does a ${s[0]} have?`;a=s[1]}
+else if(L==2){const s=P([["pentagon",5],["hexagon",6],["heptagon",7],["octagon",8],["decagon",10]]),w=P(["sides","corners"]);q=`How many ${w} does a ${s[0]} have?`;a=s[1]}
+else if(L==3){const s=P([["cube",6,12,8],["rectangular prism",6,12,8],["triangular prism",5,9,6],["square pyramid",5,8,5],["triangular pyramid",4,6,4]]),k=R(0,2);q=`How many ${["faces","edges","vertices"][k]} does a ${s[0]} have?`;a=s[k+1]}
+else if(L==4){const x=5*R(6,16),y=5*R(6,16);q=`Two angles of a triangle are ${x}° and ${y}°. What is the third angle in degrees?`;a=180-x-y}
+else if(L==5){const x=5*R(4,32);q=`Two angles sit together on a straight line. One is ${x}°. What is the other in degrees?`;a=180-x}
+else if(L==7){const s=P([["pentagon",5],["hexagon",6],["heptagon",7],["octagon",8],["decagon",10]]);q=`What is the sum of the interior angles of a ${s[0]}, in degrees?`;a=(s[1]-2)*180}else if(L==8){const n=P([5,6,8,9,10,12]);q=`What is the size of each interior angle of a regular polygon with ${n} sides, in degrees?`;a=(n-2)*180/n}else{const x=5*R(12,24),y=5*R(12,24),z=5*R(12,24);q=`Three angles of a quadrilateral are ${x}°, ${y}° and ${z}°. What is the fourth angle in degrees?`;a=360-x-y-z}
+return{q,a}}};
+const pd=z=>String(z).padStart(2,"0"),sh=x=>x.sort(()=>Math.random()-.5),gcd=(x,y)=>y?gcd(y,x%y):x,isP=n=>{if(n<2)return false;for(let i=2;i*i<=n;i++)if(n%i==0)return false;return true};
+const mn=n=>{let m,x,t;do{m=R(8,30);x=Array.from({length:n-1},()=>R(2,m+8));t=n*m-x.reduce((s,z)=>s+z,0)}while(t<1);return{m,x,t}};
+Object.assign(G,{
+nums(L){let q,a,n,s;
+if(L<=2){n=FND?R(2,19):R(L==1?5:20,L==1?30:99);s=R(0,FND?1:2);q=["What number comes just after","What number comes just before","What is double"][s]+` ${n}?`;a=[n+1,n-1,2*n][s]}
+else if(L<=4){n=L==3?R(100,999):R(1000,9999);s=R(0,1);const d=P(L==3?[10,100]:[100,1000]);q=`What is ${fmt(d)} ${s?"less":"more"} than ${fmt(n)}?`;a=s?n-d:n+d}
+else if(L<=6){const A=R(1,9),B=R(0,9),C=R(0,9),D=R(0,9),E=L==6?R(1,9):0;q=`What number is ${L==6?E+" ten thousands, ":""}${A} thousands, ${B} hundreds, ${C} tens and ${D} ones?`;a=E*10000+A*1000+B*100+C*10+D}
+else if(L==7){const x=R(2,30),y=x+R(1,40);q=`What is −${x} + ${y}?`;a=y-x}
+else{const x=R(2,60),y=R(2,60);q=`What is ${x} − (−${y})?`;a=x+y}
+return{q,a}},
+time(L){let q,a,u=1,f=fmt;
+if(L==1){const h=R(1,11);q=`It is ${h}:30. What time will it be in one hour?`;a=h+1;f=z=>z+":30"}
+else if(L==2){const n=R(2,8);q=`How many minutes are in ${n} quarter hours?`;a=15*n;u=15}
+else if(L==3){const n=R(3,12),k=R(0,1);q=k?`How many hours are in ${n} days?`:`How many days are in ${n} weeks?`;a=k?24*n:7*n;u=k?24:7}
+else if(L==4){const h=R(1,11);q=`What is ${h}:00 pm in 24-hour time?`;a=h+12;f=z=>z+":00"}
+else if(L==5){const m=R(2,11)*5,m2=R(1,11)*5;q=`A train leaves at 8:${pd(m)} am and arrives at 9:${pd(m2)} am. How many minutes does the trip take?`;a=60-m+m2;u=5}
+else if(L==6){const h=R(1,4),h2=h+R(2,5),m=P([0,15,30,45]),m2=P([0,15,30,45]);q=`A show starts at ${h}:${pd(m)} pm and ends at ${h2}:${pd(m2)} pm. How many minutes long is the show?`;a=(h2*60+m2)-(h*60+m);u=15}
+else if(L==7){const v=P([40,60,80,90,100,120]),h=R(2,6);q=`A car travels at ${v} km/h for ${h} hours. How far does it travel in km?`;a=v*h;u=v}
+else{const v=P([40,60,80,90,100,120]),h=R(2,6);q=`A trip of ${v*h} km takes ${h} hours at a steady speed. What is the speed in km/h?`;a=v;u=10}
+return{q,a,f,u}},
+stats(L){let q,a,v;
+if(L<=2){const x=R(3,L*10+5),y=R(1,x-1),w=P(["apples","stickers","cars"]);q=`There are ${x} ${w} in one box and ${y} in another. How many more are in the first box?`;a=x-y}
+else if(L==3){const m=R(2,9),o=sh([1,2,3,4,5,6,7,8,9,10].filter(z=>z!=m)).slice(0,3);v=sh([m,m,...o]);q=`What is the mode of these numbers? ${v.join(", ")}`;a=m}
+else if(L==4){v=Array.from({length:5},()=>R(2,40));q=`What is the range of these numbers? ${v.join(", ")}`;a=Math.max(...v)-Math.min(...v)}
+else if(L==5){const m=R(10,30),x=R(1,6),y=R(1,6);v=sh([m-x,m+x,m-y,m+y]);q=`What is the mean (average) of ${v.join(", ")}?`;a=m}
+else if(L==6){v=sh(Array.from({length:50},(_,i)=>i+1)).slice(0,5);q=`What is the median of these numbers? ${v.join(", ")}`;a=[...v].sort((x,y)=>x-y)[2]}
+else{const n=L==7?4:5,d=mn(n);q=`The mean of ${n} numbers is ${d.m}. ${n-1} of them are ${d.x.join(", ")}. What is the remaining number?`;a=d.t}
+return{q,a}},
+chance(L){let q,a,f=fmt,u=1;
+if(L<=2){const r=R(1,6),b=R(1,6);q=`A bag has ${r} red and ${b} blue counters. How many counters are in the bag?`;a=r+b}
+else if(L==3){const k=R(1,7);q=`A spinner has 8 equal sections and ${k} are red. How many sections are NOT red?`;a=8-k}
+else if(L==4){const n=R(1,4);q=`A fair six-sided die is rolled. How many outcomes are greater than ${n}?`;a=6-n}
+else if(L==5){const r=R(1,8),b=R(2,9);q=`A bag has ${r} red and ${b} blue marbles. Find the missing number: P(red) = ?/${r+b}`;a=r}
+else if(L==6){const n=P([4,5,10,20]),k=R(1,n-1);q=`A spinner has ${n} equal sections and ${k} are green. What is the chance of green, as a percentage?`;a=k*100/n;f=z=>z+"%";u=5}
+else if(L==7){const n=2*R(10,100);q=`A fair coin is tossed ${n} times. About how many heads are expected?`;a=n/2;u=10}
+else{const x=P([2,4,6,8]),y=P([3,4,5,6]);q=`A spinner with ${x} equal sections is spun and a fair die with ${y} faces is rolled. How many different outcomes are possible?`;a=x*y;u=2}
+return{q,a,f,u}},
+coord(L){let q,a;
+if(L<=4){const x=R(1,8),y=R(1,8),r=R(1,5),w=R(1,5),k=R(0,1);q=`A point is at (${x}, ${y}). It moves ${r} right and ${w} up. What is the new ${k?"y":"x"}-coordinate?`;a=k?y+w:x+r}
+else if(L<=6){if(R(0,1)){const n=P([3,4,5,6,8]);q=`How many lines of symmetry does a regular polygon with ${n} sides have?`;a=n}else{const k=R(4,10),x=R(1,k-1),y=R(1,9);q=`The point (${x}, ${y}) is reflected in the vertical line x = ${k}. What is the new x-coordinate?`;a=2*k-x}}
+else{const x=R(1,5),y=R(1,5),x2=x+R(2,9),y2=y+R(2,9);q=`A rectangle has opposite corners at (${x}, ${y}) and (${x2}, ${y2}), with sides parallel to the axes. What is its area?`;a=(x2-x)*(y2-y)}
+return{q,a}},
+factors(L){let q,a;
+if(L<=4){const n=P([6,8,10,12,14,15,16,18,20,24,28,30]);a=0;for(let i=1;i<=n;i++)if(n%i==0)a++;q=`How many factors does ${n} have?`}
+else if(L==5){const x=P([2,3,4,5,6,8]),y=P([3,4,5,6,9,10]);q=`What is the lowest common multiple of ${x} and ${y}?`;let m=x;while(m%y)m+=x;a=m}
+else if(L==6){const g=R(2,12),p=P([2,3,4,5,7]),r=P([3,5,6,7,8]);q=`What is the highest common factor of ${g*p} and ${g*r}?`;a=gcd(g*p,g*r)}
+else if(L==7){const s=R(1,8)*10;q=`How many prime numbers are there between ${s} and ${s+20}?`;a=0;for(let i=s+1;i<s+20;i++)if(isP(i))a++}
+else{const n=R(12,30);if(R(0,1)){q=`What is ${n}²?`;a=n*n}else{q=`What is the square root of ${n*n}?`;a=n}}
+return{q,a}},
+order(L){let q,a;const x=R(3,12),y=R(2,9),z=R(2,9);
+if(L<=5){q=`What is ${x} + ${y} × ${z}?`;a=x+y*z}
+else if(L==6){const d=R(1,x+y);q=`What is (${x} + ${y}) × ${z} − ${d}?`;a=(x+y)*z-d}
+else if(L==7){const e=R(2,6),d=e*R(1,9);q=`What is ${x} × (${y} + ${z}) − ${d} ÷ ${e}?`;a=x*(y+z)-d/e}
+else{const c=R(6,15),d=R(1,5);q=`What is ${x}² + ${y} × (${c} − ${d})?`;a=x*x+y*(c-d)}
+return{q,a}}});
+const CUR={1:["add","sub","nums","frac","pattern","measure","time","geo","stats","place"]};CUR[2]=[...CUR[1],"mul","div","money","chance"];CUR[3]=CUR[2];CUR[4]=[...CUR[3],"factors","coord"];CUR[5]=[...CUR[4],"order"];CUR[6]=CUR[5];CUR[0]=["add","sub","nums","pattern","geo","stats"];let FND=false;
+const ST={nums:"Number",add:"Number",sub:"Number",mul:"Number",div:"Number",frac:"Number",money:"Number",place:"Number",factors:"Number",order:"Number",pattern:"Algebra",measure:"Measurement",time:"Measurement",geo:"Space",coord:"Space",stats:"Statistics",chance:"Probability"},SN=["Number","Algebra","Measurement","Space","Statistics","Probability"];
+function options(a,g){const s=g.u||Math.max(1,10**Math.max(0,String(Math.floor(Math.abs(a))).length-2));
+const c=[1,-1,2,-2,3,-3,10,-10].map(k=>+(a+k*s).toFixed(2)).filter(v=>v>=0&&v!==a);
+const w=[...new Set(c)].sort(()=>Math.random()-.5).slice(0,3);return [a,...w].sort(()=>Math.random()-.5)}
+let U=null,DB=null,canW=false,syncErr=false,busy=false,dirty=false,tok=0;
+const ROUND=20,MIX=[[8,8,4],[4,10,6],[2,8,10]],TN=["Medium-hard","Hard"],CX=["Easy","Standard","Challenge"];
+const H=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0).toString(36)};
+const hp=async(id,pin)=>[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("mq|"+id+"|"+pin)))].map(x=>x.toString(16).padStart(2,"0")).join("");
+const getCur=()=>{try{return JSON.parse(localStorage.getItem("mq_cur")||"null")}catch(e){return null}};
+const setCur=c=>{try{c?localStorage.setItem("mq_cur",JSON.stringify(c)):localStorage.removeItem("mq_cur")}catch(e){}};
+async function initDb(){try{if(window.claude&&claude.use){DB=await claude.use("db");const us=await claude.use("user");canW=!us||us.can("data.write")!==false}}catch(e){DB=null}}
+async function loadU(id){let loc=null,rem=null;try{loc=JSON.parse(localStorage.getItem("mq3_"+id)||"null")}catch(e){}
+if(DB){try{const s=await DB.doc("learners/"+id).get();if(s.exists)rem=JSON.parse(JSON.stringify(s.data()))}catch(e){}}
+if(rem&&loc&&loc.ph==rem.ph&&(loc.upd||0)>(rem.upd||0))return loc;return rem||loc}
+async function flush(){if(busy){dirty=true;return}busy=true;
+do{dirty=false;try{await DB.doc("learners/"+U.id).set(JSON.parse(JSON.stringify(U)));syncErr=false}catch(e){syncErr=true;canW=false}}while(dirty);busy=false}
+function persist(){U.upd=Date.now();try{localStorage.setItem("mq3_"+U.id,JSON.stringify(U))}catch(e){}if(DB&&canW)flush()}
+const status=()=>DB&&canW?"☁️ Saved online – log in on any device to continue":"💾 Saved on this device only (online saving isn’t available for this link)";
+function cf(msg,yes){const d=document.createElement("div");d.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:99";d.innerHTML=`<div class="card" style="max-width:420px"><p style="margin-top:0">${msg}</p><button class="go" id="cy">Yes, continue</button><button class="go ghost" id="cn">Cancel</button></div>`;document.body.appendChild(d);d.querySelector("#cn").onclick=()=>d.remove();d.querySelector("#cy").onclick=()=>{d.remove();yes()}}
+const logout=()=>{setCur(null);location.hash="#/login"};
+function gen(L,seen,rs,last,pool,strict){let g,t,n=0;
+do{t=n<40||!strict?pool:P(Object.keys(G));g=G[t](L);n++}while((seen.has(H(g.q))||rs.has(g.q))&&n<80);
+rs.add(g.q);const f=g.f||fmt,s=f(g.a),m=s.match(/[\d,]*\.?\d+/),i=m.index,dec=(m[0].split(".")[1]||"").length;return{t,q:g.q,o:options(g.a,g).map(f),a:s,v:g.a,u:g.u,pre:s.slice(0,i),suf:s.slice(i+m[0].length),dec}}
+function buildRound(gr,topic){FND=gr==0;const mix=topic?MIX[U.tier[gr]||0].map(c=>Math.round(c/2)):MIX[U.tier[gr]||0],seen=new Set(U.seen),rs=new Set(),lv=gr<1?[1,1,1]:gr<3?[Math.max(1,gr-1),gr,Math.min(6,gr+1)]:[gr,Math.min(8,gr+1),Math.min(8,gr+2)],slots=[];
+mix.forEach((c,i)=>{for(let k=0;k<c;k++)slots.push(i)});slots.sort(()=>Math.random()-.5);let last="";
+const tp=topic?[topic]:sh([...CUR[gr]]);return slots.map((i,k)=>{const g=gen(lv[i],seen,rs,last,tp[k%tp.length],!topic);last=g.t;g.m=i+1;return g})}
+const fx=(g,v)=>g.pre+(g.dec?v.toFixed(g.dec):fmt(v))+g.suf,dif=g=>Math.min(1,U.tier[g]||0),dr=g=>{const h=dif(g),lo=Math.max(1,g-(h?1:2)),hi=Math.min(8,g+2);return`The test starts with hard Year ${lo} questions and moves up to Year ${hi} questions, with easier entry-level questions at the top end.`};
+function retryQ(g){let o,n=0;const old=new Set(g.o);do{o=options(g.v,{u:g.u}).map(v=>fx(g,v));n++}while(o.filter(x=>old.has(x)&&x!=g.a).length>1&&n<30);return{...g,o,retry:true,m:g.m/2}}
+function buildRound(gr,topic){const n=topic?10:20,h=dif(gr),lo=Math.max(1,gr-(h?1:2)),hi=Math.min(8,gr+2),seen=new Set(U.seen),rs=new Set(),tp=topic?[topic]:sh([...CUR[gr]]);let last="";
+return Array.from({length:n},(_,k)=>{let L=R(lo,hi);if(h)L=Math.max(L,R(lo,hi));FND=gr==0&&L==1;const g=gen(L,seen,rs,last,tp[k%tp.length],!topic);last=g.t;g.m=L<gr?1:L<gr+2?2:3;return g})}
+const cx=g=>(g.q.match(/\d/g)||[]).length*2+String(Math.round(g.v)).length;
+function pickQ(L,seen,rs,last,topic,strict,p){const c=[];for(let i=0;i<6;i++)c.push(gen(L,seen,new Set(rs),last,topic,strict));
+const u=[...new Map(c.map(x=>[x.q,x])).values()].sort((a,b)=>cx(a)-cx(b)),g=u[Math.min(u.length-1,Math.floor(p*u.length))];rs.add(g.q);return g}
+function buildRound(gr,topic){const n=topic?10:20,h=dif(gr),lo=Math.max(1,gr-(h?1:2)),hi=Math.min(8,gr+2),m=hi-lo+1,seen=new Set(U.seen),rs=new Set(),tp=topic?[topic]:sh([...CUR[gr]]),out=[];let last="",k=0;
+for(let L=lo;L<=hi;L++){const c=Math.floor(n/m)+(L-lo>=m-(n%m)?1:0),o=L-gr,[a,b]=o<0?[.85,1]:o==0?[.4,.9]:o==1?[.55,.8]:[.1,.6];
+for(let j=0;j<c;j++){const p=c>1?a+(b-a)*j/(c-1):(a+b)/2;FND=gr==0&&L==1;const g=pickQ(L,seen,rs,last,tp[k%tp.length],!topic,p);last=g.t;g.m=o<0?1:o<2?2:3;g.L=L;out.push(g);k++}}
+return out}
+function pRounds(gr){const L=U.hist.map((h,i)=>({h,i})).filter(x=>gr==null||x.h.gr==gr).reverse();
+app.innerHTML=`<div class="nav"><button class="lnk" id="bk">${gr==null?"← All years":"← Year "+gr+" menu"}</button><button class="lnk" id="lo">Log out</button></div><h1>Completed rounds${gr==null?"":" · Year "+gr}</h1><p class="sub">For parents: open a round to see every question, the answer given and the correct answer, and to add feedback.</p>${L.length?L.map(x=>`<button class="gc" style="width:100%;margin-bottom:10px" data-i="${x.i}"><b>${x.h.d} · Year ${x.h.gr}${x.h.tp?" · "+T[x.h.tp]:" · full test"}</b><span>${x.h.s}/${x.h.m} marks (${x.h.pc}%)${x.h.fb?" · feedback added":""}${x.h.rv?"":" · details not saved"}</span></button>`).join(""):`<p class="sub">No completed rounds yet.</p>`}`;
+$("#bk").onclick=()=>location.hash=gr==null?"#/grade":"#/year-"+gr;$("#lo").onclick=logout;
+document.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>location.hash="#/review-"+b.dataset.i)}
+function pReview(i){const h=U.hist[i];if(!h){location.hash="#/rounds";return}
+app.innerHTML=`<div class="nav"><button class="lnk" id="bk">← Completed rounds</button><button class="lnk" id="lo">Log out</button></div><h1>Year ${h.gr}${h.tp?" · "+T[h.tp]:" · full test"}</h1><p class="sub">${h.d} · ${h.s}/${h.m} marks (${h.pc}%)</p>
+<div class="card" style="margin-bottom:16px"><label for="fb" style="margin-top:0">Parent feedback for this round</label><textarea id="fb" rows="3" style="width:100%;font:inherit;padding:12px;border-radius:12px;border:2px solid var(--bd);background:var(--bg);color:var(--tx)">${esc(h.fb||"")}</textarea></div>
+${h.rv?h.rv.map((q,k)=>{const ok=q.c===q.a;return`<div class="card" style="margin-bottom:12px;border-left:6px solid var(--${ok?"ok":"bad"})"><p class="tag">${k+1}. ${ST[q.t]} › ${T[q.t]}${q.r?" · retry":""}</p><p style="font-weight:800;margin:6px 0">${q.q}</p><p style="margin:4px 0">Answer given: <b style="color:var(--${ok?"ok":"bad"})">${q.c==null?"–":esc(String(q.c))}</b>${ok?" ✅":` ❌ · Correct answer: <b>${esc(q.a)}</b>`}</p><input class="qn" data-k="${k}" placeholder="Add a note for this question" value="${esc(q.n||"")}"></div>`}).join(""):`<p class="sub">Question details weren’t saved for this older round.</p>`}`;
+$("#bk").onclick=()=>location.hash="#/rounds";$("#lo").onclick=logout;$("#fb").onchange=e=>{h.fb=e.target.value;persist()};
+document.querySelectorAll(".qn").forEach(x=>x.onchange=()=>{h.rv[+x.dataset.k].n=x.value;persist()})}
+function startRound(gr,topic){const qs=buildRound(gr,topic);U.round={gr,topic:topic||null,qs,i:0,pick:null,score:0,max:qs.reduce((s,q)=>s+q.m,0),log:[]};U.done=null;persist();location.hash="#/quiz"}
+async function route(){const my=++tok,h=location.hash.replace("#/","")||"login",c=getCur();U=null;
+if(c){app.innerHTML='<p class="sub">Loading your progress…</p>';const u=await loadU(c.id);if(my!=tok)return;if(u&&u.ph==c.ph)U=u;else setCur(null)}
+if(!U&&h!="login"){location.hash="#/login";return}
+if(h=="login")pLogin();else if(h=="grade")pGrade();else if(/^year-[0-6]$/.test(h))pYear(+h.slice(5));else if(/^rounds(-[0-6])?$/.test(h))pRounds(h.length>6?+h.slice(7):null);else if(/^review-\d+$/.test(h))pReview(+h.slice(7));
+else if(h=="quiz"){U.round?pQuiz():location.hash="#/grade"}
+else if(h=="results"){U.done?pRes():location.hash="#/grade"}else location.hash="#/login"}
+function pLogin(){app.innerHTML=`<h1>🧮 Maths Quest</h1><p class="sub">Step 1 of 3 · Log in<br>Mathematics practice based on the Victorian Curriculum (Foundation to Level 6)</p><div class="card"><label for="nm">Learner ID</label><input id="nm" maxlength="20" placeholder="e.g. sam_2015 (a nickname, 3–20 letters/numbers)" autocomplete="off" autocapitalize="none"><label for="pn">4-digit PIN</label><input id="pn" type="password" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off"><p class="sub" id="er" style="margin-top:12px;color:var(--bad)"></p><button class="go" id="st">Log in or create my profile</button></div><p class="stat" style="margin-top:14px">New ID? A profile is created automatically. Use a nickname, not a full name. ${status()}</p>`;
+const run=async()=>{const id=$("#nm").value.trim().toLowerCase(),pin=$("#pn").value.trim(),er=$("#er");
+if(!/^[a-z0-9_-]{3,20}$/.test(id)){er.textContent="Learner ID needs 3–20 letters, numbers, - or _.";return}
+if(!/^\d{4}$/.test(pin)){er.textContent="PIN must be exactly 4 digits.";return}
+$("#st").disabled=true;er.textContent="";const ph=await hp(id,pin);let u=await loadU(id);
+if(u&&u.ph!=ph){er.textContent="That PIN doesn’t match this Learner ID.";$("#st").disabled=false;return}
+if(!u){U={id,ph,name:id,seen:[],tier:{},last:{},hist:[],stats:{},round:null,done:null};persist()}
+else{u.tier=u.tier||{};u.last=u.last||{};U=u}
+setCur({id,ph});location.hash="#/grade"};
+$("#st").onclick=run;$("#pn").onkeydown=e=>{if(e.key=="Enter")run()}}
+function pGrade(){const r=U.round;
+app.innerHTML=`<div class="nav"><span>Hi, <b>${esc(U.id)}</b> 👋</span><span>${U.lastGr!=null?`<button class="lnk" id="hm">🏠 Year ${U.lastGr} home</button> `:""}<button class="lnk" id="lo">Log out</button></span></div><h1>Choose your year level</h1><p class="sub">Step 2 of 3 · Choose a year, then topic practice or the full-year test.</p>
+${r?`<div class="card" style="margin-bottom:16px"><b>You have an unfinished Year ${r.gr} round</b> (question ${r.i+1} of ${r.qs.length}).<button class="go" id="rs">Resume where I left off</button><button class="go ghost" id="rr">Restart this round with new questions</button></div>`:""}
+<div class="grades">${[0,1,2,3,4,5,6].map(g=>`<button class="gc" data-g="${g}"><b>Year ${g}</b><span>${TN[dif(g)]}${U.last[g]!=null?` · last score ${U.last[g]}%`:" · not tried yet"}</span></button>`).join("")}</div>
+<button class="go ghost" id="ra" style="margin-top:18px">📋 Review completed rounds (for parents)</button><p class="stat" style="margin-top:18px">${status()}</p><button class="lnk" id="rp">Reset all my progress</button>`;
+$("#lo").onclick=logout;if(U.lastGr!=null)$("#hm").onclick=()=>location.hash="#/year-"+U.lastGr;if(r){$("#rs").onclick=()=>location.hash="#/quiz";$("#rr").onclick=()=>startRound(r.gr,r.topic)}
+$("#ra").onclick=()=>location.hash="#/rounds";$("#rp").onclick=()=>cf("Reset ALL progress (levels, scores and question history) and start again from the beginning?",()=>{U.seen=[];U.tier={};U.last={};U.hist=[];U.stats={};U.topic={};U.round=null;U.done=null;persist();pGrade()});
+document.querySelectorAll(".gc").forEach(b=>b.onclick=()=>location.hash="#/year-"+b.dataset.g)}
+function pYear(gr){U.lastGr=gr;persist();const tp=CUR[gr],r=U.round,go=t=>()=>{const run=()=>startRound(gr,t);r?cf("Starting a new round will replace your unfinished one. Continue?",run):run()};
+app.innerHTML=`<div class="nav"><button class="lnk" id="bk">← All years</button><button class="lnk" id="lo">Log out</button></div><h1>Year ${gr}</h1>${r?`<div class="card" style="margin:12px 0"><b>Unfinished round:</b> Year ${r.gr}${r.topic?" · "+T[r.topic]:" full test"} (question ${r.i+1} of ${r.qs.length})<button class="go" id="rs">Resume</button></div>`:""}
+<div class="card" style="margin:12px 0"><b>Difficulty</b><div class="seg" style="margin-top:8px"><button data-d="0" class="${dif(gr)?"":"on"}">Medium-hard</button><button data-d="1" class="${dif(gr)?"on":""}">Hard</button></div><p class="stat" style="margin:8px 0 0">${dr(gr)}</p></div><h2>Section 1 · Topic practice</h2><p class="sub">Pick a topic for a 10-question practice round.</p>
+${SN.map(sn=>{const ts=tp.filter(t=>ST[t]==sn);return ts.length?`<h3>${sn}</h3><div class="grades">${ts.map(t=>{const o=(U.topic||{})[gr+"|"+t];return`<button class="gc" data-t="${t}"><b>${T[t]}</b><span>${o?`Last ${o.last}% · best ${o.best}%`:"Not tried yet"}</span></button>`}).join("")}</div>`:""}).join("")}
+<h2 style="margin-top:28px">Section 2 · Full Year ${gr} test</h2><p class="sub">20 questions covering every topic above. Difficulty: <b>${TN[dif(gr)]}</b>${U.last[gr]!=null?` · last score ${U.last[gr]}%`:""}</p><button class="go" id="ft">Start the full Year ${gr} test</button><button class="go ghost" id="rv">📋 Review completed rounds (for parents)</button>`;
+document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{U.tier[gr]=+b.dataset.d;persist();pYear(gr)});$("#bk").onclick=()=>location.hash="#/grade";if(r)$("#rs").onclick=()=>location.hash="#/quiz";$("#lo").onclick=logout;$("#ft").onclick=go();$("#rv").onclick=()=>location.hash="#/rounds-"+gr;
+document.querySelectorAll("[data-t]").forEach(b=>b.onclick=go(b.dataset.t))}
+function pQuiz(){const r=U.round,g=r.qs[r.i];
+app.innerHTML=`<div class="nav"><button class="lnk" id="hm">🏠 Home</button></div><div class="card"><div class="top"><span>Year ${r.gr} · ${r.topic?T[r.topic]+" · ":""}Question ${r.i+1} of ${r.qs.length}</span><span class="badge">${g.retry?"Try again · ":""}${g.m} mark${g.m>1?"s":""}</span></div><div class="bar"><i style="width:${r.i*100/r.qs.length}%"></i></div><p class="tag">${ST[g.t]} › ${T[g.t]} · ${CX[g.m-1]}</p><h2 class="q">${g.q}</h2><div class="opts">${g.o.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join("")}</div><div class="fb" id="fb"></div></div>
+<div class="nav" style="margin-top:12px"><button class="lnk" id="rq">Restart round</button><button class="lnk" id="mn">Save &amp; exit</button></div>`;
+document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>pick(+b.dataset.i));
+$("#rq").onclick=()=>cf("Restart this round from question 1 with a fresh set of questions?",()=>startRound(r.gr,r.topic));$("#mn").onclick=()=>location.hash="#/year-"+r.gr;$("#hm").onclick=()=>location.hash="#/year-"+r.gr;
+if(r.pick!=null)mark()}
+function pick(i){const r=U.round,g=r.qs[r.i];if(r.pick!=null)return;r.pick=i;(r.ans=r.ans||[])[r.i]=g.o[i];const ok=g.o[i]==g.a;if(ok)r.score+=g.m;if(!ok&&!g.retry&&g.v!=null)r.qs.splice(Math.min(r.i+3,r.qs.length),0,retryQ(g));
+if(!g.retry)U.seen.push(H(g.q));if(U.seen.length>6000)U.seen=U.seen.slice(-6000);
+const st=U.stats[g.t]||(U.stats[g.t]={c:0,n:0});if(!g.retry){st.n++;if(ok)st.c++}r.log.push(ok?1:0);persist();mark()}
+function mark(){const r=U.round,g=r.qs[r.i],ok=g.o[r.pick]==g.a,s=g.m>1?"s":"";
+document.querySelectorAll(".opt").forEach((b,j)=>{b.disabled=true;if(g.o[j]==g.a)b.classList.add("ok");else if(j==r.pick)b.classList.add("bad")});
+$("#fb").innerHTML=`<div style="color:var(${ok?"--ok":"--bad"})">${ok?(g.retry?`✅ Correct this time – well done! +${g.m} mark${s} added`:`✅ Correct! +${g.m} mark${s}`):`❌ Incorrect. The correct answer is ${g.a}. ${g.retry?"":`You’ll see this question again soon with new options – get it right then to win back half marks (${g.m/2}). (0 of ${g.m} mark${s} for now)`}`}</div><div class="sub">Marks so far: ${r.score} / ${r.qs.slice(0,r.i+1).reduce((a,x)=>a+(x.retry?0:x.m),0)}</div><button class="go" id="nx">${r.i+1>=r.qs.length?"Finish round":"Next question"}</button>`;
+$("#nx").onclick=()=>{if(r.i+1>=r.qs.length)finish();else{r.i++;r.pick=null;persist();pQuiz()}}}
+function finish(){const r=U.round,pc=Math.round(100*r.score/r.max),gr=r.gr,t=Math.min(1,U.tier[gr]||0);let nt=t;
+if(r.topic){U.topic=U.topic||{};const k=gr+"|"+r.topic,o=U.topic[k]||{best:0};U.topic[k]={last:pc,best:Math.max(o.best,pc)}}else if(pc>=80&&t<1)nt=t+1;else if(pc<50&&t>0)nt=t-1;
+U.tier[gr]=nt;if(!r.topic)U.last[gr]=pc;U.hist.push({d:new Date().toLocaleDateString("en-AU"),gr,tp:r.topic||"",pc,s:r.score,m:r.max,rv:r.qs.map((q,i)=>({q:q.q,a:q.a,c:(r.ans||[])[i],m:q.m,t:q.t,r:q.retry?1:0}))});if(U.hist.length>25)U.hist=U.hist.slice(-25);
+U.done={gr,topic:r.topic||null,score:r.score,max:r.max,pc,t,nt,log:r.qs.map((q,i)=>[q.t,r.log[i],q.retry]).filter(x=>!x[2])};U.round=null;persist();location.hash="#/results"}
+function pRes(){const d=U.done,tp={};d.log.forEach(([t,o])=>{const x=tp[t]||(tp[t]={c:0,n:0});x.n++;x.c+=o});
+const rows=Object.keys(tp).map(t=>{const p=Math.round(100*tp[t].c/tp[t].n);return`<div class="row"><b>${T[t]}</b><div class="bar"><i style="width:${p}%"></i></div><span>${tp[t].c}/${tp[t].n}</span></div>`}).join("");
+const msg=d.topic?`Nice practice on <b>${T[d.topic]}</b>! Beat your best score, or try the full Year ${d.gr} test.`:d.nt>d.t?`🚀 Great work! Your next Year ${d.gr} round moves up to the <b>${TN[d.nt]}</b> tier with harder questions.`:d.nt<d.t?`Your next Year ${d.gr} round will ease back to the <b>${TN[d.nt]}</b> tier to build confidence.`:d.pc>=80?`🏆 Brilliant! You’re already on the top tier for Year ${d.gr}.`:`You’ll stay on the <b>${TN[d.nt]}</b> tier. Score 80% or more to move up!`;
+const past=U.hist.slice(-5).reverse().map(h=>`<div class="row"><b>${h.d}</b><span>Year ${h.gr}${h.tp?" · "+T[h.tp]:" · full test"} · ${h.s}/${h.m} marks (${h.pc}%)</span></div>`).join("");
+app.innerHTML=`<div class="nav"><button class="lnk" id="hm">🏠 Home</button></div><p class="sub">Step 3 of 3 · Results</p><div class="card"><h1>Well done, ${esc(U.id)}!</h1><div class="score">${d.score} / ${d.max} marks</div><p class="sub" style="font-size:22px"><b>${d.pc}%</b> in Year ${d.gr}${d.topic?" · "+T[d.topic]:" · full test"}</p><p>${msg}</p>
+<h3>This round by topic</h3>${rows}<h3>Recent rounds</h3>${past}
+<button class="go" id="again">Another round${d.topic?" on "+T[d.topic]:" – Year "+d.gr}</button><button class="go ghost" id="ch">Back to Year ${d.gr} menu</button><button class="go ghost" id="rvw">Review this round</button><button class="go ghost" id="yr">Choose a different year</button><button class="go ghost" id="lo">Log out</button></div>`;
+$("#again").onclick=()=>startRound(d.gr,d.topic);$("#ch").onclick=()=>location.hash="#/year-"+d.gr;$("#rvw").onclick=()=>location.hash="#/review-"+(U.hist.length-1);$("#yr").onclick=()=>location.hash="#/grade";$("#hm").onclick=()=>location.hash="#/year-"+d.gr;$("#lo").onclick=logout}
+new MutationObserver(()=>{const w=document.createTreeWalker(app,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode())if(n.nodeValue.includes("Year 0"))n.nodeValue=n.nodeValue.replace(/Year 0/g,"Foundation")}).observe(app,{childList:true,subtree:true,characterData:true});
+window.onhashchange=route;initDb().then(route);
+</script></body></html>
